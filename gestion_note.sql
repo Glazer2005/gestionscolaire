@@ -1,47 +1,84 @@
--- Création de la base de données
-CREATE DATABASE IF NOT EXISTS gestion_notes;
+-- 1. Création de la base
+DROP DATABASE IF EXISTS gestion_notes;
+CREATE DATABASE gestion_notes;
 USE gestion_notes;
 
--- Table des administrateurs (utilisateurs)
-CREATE TABLE IF NOT EXISTS utilisateurs (
+-- 2. Table des admins
+CREATE TABLE admin (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    mot_de_passe VARCHAR(255) NOT NULL,
-    role ENUM('admin') DEFAULT 'admin'
+    mot_de_passe VARCHAR(100) NOT NULL
 );
 
--- Table des formations
-CREATE TABLE IF NOT EXISTS formations (
+-- Ajout d’un admin
+INSERT INTO admin (nom, email, mot_de_passe) VALUES
+('Administrateur Principal', 'admin@example.com', 'admin1234');
+
+-- 3. Table des formations
+CREATE TABLE formations (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    libelle VARCHAR(100) NOT NULL
+    nom VARCHAR(100) NOT NULL
 );
 
--- Table des étudiants
-CREATE TABLE IF NOT EXISTS etudiants (
-    matricule VARCHAR(20) PRIMARY KEY,
-    nom VARCHAR(50) NOT NULL,
-    prenom VARCHAR(50) NOT NULL,
-    adresse TEXT,
-    telephone VARCHAR(20),
-    mot_de_passe VARCHAR(255) NOT NULL,
+-- Ajout des formations
+INSERT INTO formations (nom) VALUES
+('Informatique'),
+('Génie Civil'),
+('Sciences Économiques');
+
+-- 4. Table des étudiants
+CREATE TABLE etudiants (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    prenom VARCHAR(100) NOT NULL,
+    matricule VARCHAR(20) NOT NULL UNIQUE,
+    mot_de_passe VARCHAR(100) NOT NULL,
     id_formation INT,
-    FOREIGN KEY (id_formation) REFERENCES formations(id) ON DELETE SET NULL
+    FOREIGN KEY (id_formation) REFERENCES formations(id)
 );
 
--- Table des matières
-CREATE TABLE IF NOT EXISTS matieres (
+-- Insertion des étudiants personnalisés
+INSERT INTO etudiants (nom, prenom, matricule, mot_de_passe, id_formation) VALUES
+('Sow', 'Moussa', 'ETU001', 'sow1234', 1),
+('Fall', 'Aminata', 'ETU002', 'fall1234', 2),
+('Diallo', 'Ibrahima', 'ETU003', 'diallo1234', 1),
+('Ndoye', 'Fatou', 'ETU004', 'ndoye1234', 3);
+
+-- 5. Table des matières
+CREATE TABLE matieres (
     code VARCHAR(10) PRIMARY KEY,
     libelle VARCHAR(100) NOT NULL,
-    id_formation INT,
-    FOREIGN KEY (id_formation) REFERENCES formations(id) ON DELETE CASCADE
+    id_formation INT NOT NULL,
+    FOREIGN KEY (id_formation) REFERENCES formations(id)
 );
 
--- Table des notes
-CREATE TABLE IF NOT EXISTS notes (
+-- Insertion des matières selon les formations
+INSERT INTO matieres (code, libelle, id_formation) VALUES
+('INF101', 'Programmation Web', 1),
+('INF102', 'Algorithmes', 1),
+('GC101', 'Résistance des matériaux', 2),
+('GC102', 'Topographie', 2),
+('ECO101', 'Macroéconomie', 3),
+('ECO102', 'Comptabilité Générale', 3);
+
+-- 6. Table des notes
+CREATE TABLE notes (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    matricule VARCHAR(20),
-    code_matiere VARCHAR(10),
-    note DECIMAL(5,2),
-    FOREIGN KEY (matricule) REFERENCES etudiants(matricule) ON DELETE CASCADE,
-    FOREIGN KEY (code_matiere) REFERENCES matieres(code) ON DELETE CASCADE
+    matricule VARCHAR(20) NOT NULL,
+    code_matiere VARCHAR(10) NOT NULL,
+    note DECIMAL(5,2) NOT NULL,
+    FOREIGN KEY (matricule) REFERENCES etudiants(matricule),
+    FOREIGN KEY (code_matiere) REFERENCES matieres(code)
 );
+
+-- Insertion des notes personnalisées
+INSERT INTO notes (matricule, code_matiere, note) VALUES
+('ETU001', 'INF101', 14.5),
+('ETU001', 'INF102', 16.0),
+('ETU002', 'GC101', 13.5),
+('ETU002', 'GC102', 12.0),
+('ETU003', 'INF101', 15.0),
+('ETU003', 'INF102', 14.0),
+('ETU004', 'ECO101', 17.0),
+('ETU004', 'ECO102', 16.5);
